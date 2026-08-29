@@ -10,8 +10,8 @@ const options = {
     },
     servers: [
       {
-        url: `http://localhost:${process.env.PORT || 4000}`,
-        description: "Local server",
+        url: process.env.SWAGGER_URL || `http://localhost:${process.env.PORT || 4000}`,
+        description: "API server",
       },
     ],
     components: {

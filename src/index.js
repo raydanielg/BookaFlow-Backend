@@ -18,10 +18,15 @@ const bookingRoutes = require("./routes/booking")
 
 const app = express()
 
-app.use(helmet())
+app.set("trust proxy", 1)
+
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false,
+}))
 app.use(
   cors({
-    origin: config.clientUrl,
+    origin: true,
     credentials: true,
   })
 )
