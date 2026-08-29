@@ -9,6 +9,30 @@ const router = express.Router()
 router.use(authMiddleware)
 
 // GET /api/customers/:businessId?search=
+/**
+ * @swagger
+ * /api/customers/{businessId}:
+ *   get:
+ *     tags: [Customers]
+ *     summary: List customers (with optional search)
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: businessId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search by name, phone, or email
+ *     responses:
+ *       200:
+ *         description: List of customers
+ *       401:
+ *         description: Unauthorized
+ */
 router.get("/:businessId", businessMiddleware, async (req, res, next) => {
   try {
     const { search } = req.query
@@ -52,6 +76,30 @@ router.get("/:businessId", businessMiddleware, async (req, res, next) => {
 })
 
 // GET /api/customers/:businessId/:id
+/**
+ * @swagger
+ * /api/customers/{businessId}/{id}:
+ *   get:
+ *     tags: [Customers]
+ *     summary: Get customer details with appointment history
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: businessId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Customer details with history
+ *       404:
+ *         description: Customer not found
+ */
 router.get("/:businessId/:id", businessMiddleware, async (req, res, next) => {
   try {
     const customer = await prisma.customer.findFirst({
@@ -99,6 +147,41 @@ router.get("/:businessId/:id", businessMiddleware, async (req, res, next) => {
 })
 
 // POST /api/customers/:businessId
+/**
+ * @swagger
+ * /api/customers/{businessId}:
+ *   post:
+ *     tags: [Customers]
+ *     summary: Add a new customer
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: businessId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name, phone]
+ *             properties:
+ *               name:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               notes:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Customer added
+ *       409:
+ *         description: Customer with this phone already exists
+ */
 router.post("/:businessId", businessMiddleware, validateBody(customerSchema), async (req, res, next) => {
   try {
     const { name, phone, email, notes } = req.body
@@ -130,6 +213,45 @@ router.post("/:businessId", businessMiddleware, validateBody(customerSchema), as
 })
 
 // PUT /api/customers/:businessId/:id
+/**
+ * @swagger
+ * /api/customers/{businessId}/{id}:
+ *   put:
+ *     tags: [Customers]
+ *     summary: Update customer info
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: businessId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               notes:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Customer updated
+ *       401:
+ *         description: Unauthorized
+ */
 router.put("/:businessId/:id", businessMiddleware, validateBody(customerSchema), async (req, res, next) => {
   try {
     const { name, phone, email, notes } = req.body

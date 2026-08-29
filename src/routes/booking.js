@@ -7,6 +7,27 @@ const { generateTimeSlots, getWeekDay } = require("../utils/helpers")
 const router = express.Router()
 
 // GET /api/booking/:slug — public business profile + services
+/**
+ * @swagger
+ * /api/booking/{slug}:
+ *   get:
+ *     tags: [Booking]
+ *     summary: Get public business profile + services
+ *     description: Public endpoint — no auth required
+ *     security: []
+ *     parameters:
+ *       - in: path
+ *         name: slug
+ *         required: true
+ *         schema:
+ *           type: string
+ *         example: beauty-house
+ *     responses:
+ *       200:
+ *         description: Business profile with services, staff, and working hours
+ *       404:
+ *         description: Business not found
+ */
 router.get("/:slug", async (req, res, next) => {
   try {
     const business = await prisma.business.findUnique({
@@ -78,6 +99,53 @@ router.get("/:slug", async (req, res, next) => {
 })
 
 // GET /api/booking/:slug/slots?serviceId=&staffId=&date=
+/**
+ * @swagger
+ * /api/booking/{slug}/slots:
+ *   get:
+ *     tags: [Booking]
+ *     summary: Get available time slots for booking
+ *     description: Public endpoint — no auth required
+ *     security: []
+ *     parameters:
+ *       - in: path
+ *         name: slug
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: serviceId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: staffId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: date
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *     responses:
+ *       200:
+ *         description: Available time slots
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 slots:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *       400:
+ *         description: Missing required query params
+ *       404:
+ *         description: Business or service not found
+ */
 router.get("/:slug/slots", async (req, res, next) => {
   try {
     const { serviceId, staffId, date } = req.query
@@ -139,6 +207,55 @@ router.get("/:slug/slots", async (req, res, next) => {
 })
 
 // POST /api/booking/:slug — create appointment (no auth required)
+/**
+ * @swagger
+ * /api/booking/{slug}:
+ *   post:
+ *     tags: [Booking]
+ *     summary: Create a booking (public, no auth)
+ *     description: Public endpoint — customers can book without an account
+ *     security: []
+ *     parameters:
+ *       - in: path
+ *         name: slug
+ *         required: true
+ *         schema:
+ *           type: string
+ *         example: beauty-house
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [serviceId, staffId, date, startTime, customerName, customerPhone]
+ *             properties:
+ *               serviceId:
+ *                 type: string
+ *               staffId:
+ *                 type: string
+ *               date:
+ *                 type: string
+ *                 format: date
+ *               startTime:
+ *                 type: string
+ *                 example: "09:00"
+ *               customerName:
+ *                 type: string
+ *               customerPhone:
+ *                 type: string
+ *               customerEmail:
+ *                 type: string
+ *               notes:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Booking confirmed
+ *       404:
+ *         description: Business or service not found
+ *       409:
+ *         description: Time slot already booked
+ */
 router.post("/:slug", validateBody(appointmentSchema), async (req, res, next) => {
   try {
     const { serviceId, staffId, date, startTime, customerName, customerPhone, customerEmail, notes } = req.body

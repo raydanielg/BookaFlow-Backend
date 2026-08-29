@@ -9,6 +9,25 @@ const router = express.Router()
 router.use(authMiddleware)
 
 // GET /api/staff/:businessId
+/**
+ * @swagger
+ * /api/staff/{businessId}:
+ *   get:
+ *     tags: [Staff]
+ *     summary: List all staff members
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: businessId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: List of staff members
+ *       401:
+ *         description: Unauthorized
+ */
 router.get("/:businessId", businessMiddleware, async (req, res, next) => {
   try {
     const staff = await prisma.staff.findMany({
@@ -43,6 +62,45 @@ router.get("/:businessId", businessMiddleware, async (req, res, next) => {
 })
 
 // POST /api/staff/:businessId
+/**
+ * @swagger
+ * /api/staff/{businessId}:
+ *   post:
+ *     tags: [Staff]
+ *     summary: Add a staff member
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: businessId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name]
+ *             properties:
+ *               name:
+ *                 type: string
+ *               title:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               serviceIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *     responses:
+ *       201:
+ *         description: Staff added
+ *       401:
+ *         description: Unauthorized
+ */
 router.post("/:businessId", businessMiddleware, validateBody(staffSchema), async (req, res, next) => {
   try {
     const { name, title, phone, email, serviceIds } = req.body
@@ -82,6 +140,49 @@ router.post("/:businessId", businessMiddleware, validateBody(staffSchema), async
 })
 
 // PUT /api/staff/:businessId/:id
+/**
+ * @swagger
+ * /api/staff/{businessId}/{id}:
+ *   put:
+ *     tags: [Staff]
+ *     summary: Update a staff member
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: businessId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               title:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               serviceIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *     responses:
+ *       200:
+ *         description: Staff updated
+ *       401:
+ *         description: Unauthorized
+ */
 router.put("/:businessId/:id", businessMiddleware, validateBody(staffSchema), async (req, res, next) => {
   try {
     const { name, title, phone, email, serviceIds } = req.body
@@ -122,6 +223,30 @@ router.put("/:businessId/:id", businessMiddleware, validateBody(staffSchema), as
 })
 
 // DELETE /api/staff/:businessId/:id
+/**
+ * @swagger
+ * /api/staff/{businessId}/{id}:
+ *   delete:
+ *     tags: [Staff]
+ *     summary: Remove a staff member
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: businessId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Staff removed
+ *       401:
+ *         description: Unauthorized
+ */
 router.delete("/:businessId/:id", businessMiddleware, async (req, res, next) => {
   try {
     await prisma.staff.delete({

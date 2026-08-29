@@ -10,6 +10,31 @@ const router = express.Router()
 router.use(authMiddleware)
 
 // GET /api/appointments/:businessId?date=2026-08-30
+/**
+ * @swagger
+ * /api/appointments/{businessId}:
+ *   get:
+ *     tags: [Appointments]
+ *     summary: List appointments (optionally filter by date)
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: businessId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: date
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Filter by specific date (YYYY-MM-DD)
+ *     responses:
+ *       200:
+ *         description: List of appointments
+ *       401:
+ *         description: Unauthorized
+ */
 router.get("/:businessId", businessMiddleware, async (req, res, next) => {
   try {
     const { date } = req.query
@@ -65,6 +90,53 @@ router.get("/:businessId", businessMiddleware, async (req, res, next) => {
 })
 
 // POST /api/appointments/:businessId
+/**
+ * @swagger
+ * /api/appointments/{businessId}:
+ *   post:
+ *     tags: [Appointments]
+ *     summary: Create a new appointment
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: businessId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [serviceId, staffId, date, startTime, customerName, customerPhone]
+ *             properties:
+ *               serviceId:
+ *                 type: string
+ *               staffId:
+ *                 type: string
+ *               date:
+ *                 type: string
+ *                 format: date
+ *               startTime:
+ *                 type: string
+ *                 example: "09:00"
+ *               customerName:
+ *                 type: string
+ *               customerPhone:
+ *                 type: string
+ *               customerEmail:
+ *                 type: string
+ *               notes:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Appointment created
+ *       404:
+ *         description: Service not found
+ *       409:
+ *         description: Time slot already booked
+ */
 router.post("/:businessId", businessMiddleware, validateBody(appointmentSchema), async (req, res, next) => {
   try {
     const { serviceId, staffId, date, startTime, customerName, customerPhone, customerEmail, notes } = req.body
@@ -178,6 +250,41 @@ router.post("/:businessId", businessMiddleware, validateBody(appointmentSchema),
 })
 
 // PUT /api/appointments/:businessId/:id/status
+/**
+ * @swagger
+ * /api/appointments/{businessId}/{id}/status:
+ *   put:
+ *     tags: [Appointments]
+ *     summary: Update appointment status
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: businessId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [status]
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: [PENDING, CONFIRMED, COMPLETED, CANCELLED, NO_SHOW]
+ *     responses:
+ *       200:
+ *         description: Appointment status updated
+ *       401:
+ *         description: Unauthorized
+ */
 router.put("/:businessId/:id/status", businessMiddleware, validateBody(updateAppointmentStatusSchema), async (req, res, next) => {
   try {
     const { status } = req.body
@@ -204,6 +311,44 @@ router.put("/:businessId/:id/status", businessMiddleware, validateBody(updateApp
 })
 
 // PUT /api/appointments/:businessId/:id/reschedule
+/**
+ * @swagger
+ * /api/appointments/{businessId}/{id}/reschedule:
+ *   put:
+ *     tags: [Appointments]
+ *     summary: Reschedule an appointment
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: businessId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [date, startTime]
+ *             properties:
+ *               date:
+ *                 type: string
+ *                 format: date
+ *               startTime:
+ *                 type: string
+ *                 example: "10:00"
+ *     responses:
+ *       200:
+ *         description: Appointment rescheduled
+ *       404:
+ *         description: Appointment not found
+ */
 router.put("/:businessId/:id/reschedule", businessMiddleware, async (req, res, next) => {
   try {
     const { date, startTime } = req.body
@@ -245,6 +390,50 @@ router.put("/:businessId/:id/reschedule", businessMiddleware, async (req, res, n
 })
 
 // GET /api/appointments/:businessId/available-slots?staffId=&date=&serviceId=
+/**
+ * @swagger
+ * /api/appointments/{businessId}/available-slots:
+ *   get:
+ *     tags: [Appointments]
+ *     summary: Get available time slots
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: businessId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: staffId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: date
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - in: query
+ *         name: serviceId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Available time slots
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 slots:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *       400:
+ *         description: Missing required query params
+ */
 router.get("/:businessId/available-slots", businessMiddleware, async (req, res, next) => {
   try {
     const { staffId, date, serviceId } = req.query

@@ -9,7 +9,57 @@ const { signupSchema, loginSchema } = require("../validations/auth")
 
 const router = express.Router()
 
-// POST /api/auth/signup — creates user + business + member
+/**
+ * @swagger
+ * /api/auth/signup:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Register a new business owner
+ *     description: Creates a user, business, and business member in one transaction
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [fullName, email, password, businessName]
+ *             properties:
+ *               fullName:
+ *                 type: string
+ *                 example: Jane Doe
+ *               email:
+ *                 type: string
+ *                 example: jane@example.com
+ *               password:
+ *                 type: string
+ *                 example: password123
+ *               businessName:
+ *                 type: string
+ *                 example: Beauty House
+ *               businessType:
+ *                 type: string
+ *                 enum: [SALON, CLINIC, SPA, GYM, CONSULTATION, OTHER]
+ *                 example: SALON
+ *     responses:
+ *       201:
+ *         description: Account created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 token:
+ *                   type: string
+ *                 user:
+ *                   type: object
+ *                 business:
+ *                   type: object
+ *       409:
+ *         description: Email already registered
+ */
 router.post("/signup", validateBody(signupSchema), async (req, res, next) => {
   try {
     const { fullName, email, password, businessName, businessType } = req.body
@@ -83,7 +133,48 @@ router.post("/signup", validateBody(signupSchema), async (req, res, next) => {
   }
 })
 
-// POST /api/auth/login
+/**
+ * @swagger
+ * /api/auth/login:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Login with email and password
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, password]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: owner@beauty-house.com
+ *               password:
+ *                 type: string
+ *                 example: password123
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 token:
+ *                   type: string
+ *                 user:
+ *                   type: object
+ *                 businesses:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *       401:
+ *         description: Invalid email or password
+ */
 router.post("/login", validateBody(loginSchema), async (req, res, next) => {
   try {
     const { email, password } = req.body
@@ -130,7 +221,30 @@ router.post("/login", validateBody(loginSchema), async (req, res, next) => {
   }
 })
 
-// GET /api/auth/me
+/**
+ * @swagger
+ * /api/auth/me:
+ *   get:
+ *     tags: [Auth]
+ *     summary: Get current user profile
+ *     security: [bearerAuth: []]
+ *     responses:
+ *       200:
+ *         description: Current user info with businesses
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 user:
+ *                   type: object
+ *                 businesses:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *       401:
+ *         description: Unauthorized
+ */
 router.get("/me", authMiddleware, async (req, res, next) => {
   try {
     const businesses = await prisma.businessMember.findMany({

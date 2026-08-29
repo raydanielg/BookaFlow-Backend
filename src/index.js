@@ -3,8 +3,10 @@ const helmet = require("helmet")
 const cors = require("cors")
 const morgan = require("morgan")
 const cookieParser = require("cookie-parser")
+const swaggerUi = require("swagger-ui-express")
 
 const config = require("./config/env")
+const swaggerSpec = require("./config/swagger")
 const { notFound, errorHandler } = require("./middleware/error")
 const authRoutes = require("./routes/auth")
 const businessRoutes = require("./routes/business")
@@ -45,10 +47,14 @@ app.use("/api/staff", staffRoutes)
 app.use("/api/appointments", appointmentRoutes)
 app.use("/api/customers", customerRoutes)
 
+// Swagger docs
+app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+
 app.use(notFound)
 app.use(errorHandler)
 
 app.listen(config.port, () => {
   console.log(`\n  BookaFlow Booking API running on http://localhost:${config.port}`)
+  console.log(`  Swagger docs: http://localhost:${config.port}/api/docs`)
   console.log(`  Environment: ${config.nodeEnv}\n`)
 })

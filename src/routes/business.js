@@ -9,6 +9,27 @@ const router = express.Router()
 router.use(authMiddleware)
 
 // GET /api/business/:businessId
+/**
+ * @swagger
+ * /api/business/{businessId}:
+ *   get:
+ *     tags: [Business]
+ *     summary: Get business profile
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: businessId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Business profile with stats
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Not a member of this business
+ */
 router.get("/:businessId", businessMiddleware, async (req, res, next) => {
   try {
     const business = await prisma.business.findUnique({
@@ -54,6 +75,44 @@ router.get("/:businessId", businessMiddleware, async (req, res, next) => {
 })
 
 // PUT /api/business/:businessId
+/**
+ * @swagger
+ * /api/business/{businessId}:
+ *   put:
+ *     tags: [Business]
+ *     summary: Update business profile
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: businessId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               address:
+ *                 type: string
+ *               city:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Business profile updated
+ *       401:
+ *         description: Unauthorized
+ */
 router.put("/:businessId", businessMiddleware, validateBody(businessProfileSchema), async (req, res, next) => {
   try {
     const { name, description, phone, email, address, city } = req.body
@@ -129,6 +188,43 @@ router.post("/:businessId/working-hours", businessMiddleware, validateBody(worki
 })
 
 // GET /api/business/:businessId/dashboard
+/**
+ * @swagger
+ * /api/business/{businessId}/dashboard:
+ *   get:
+ *     tags: [Business]
+ *     summary: Get dashboard overview (today's schedule + stats)
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: businessId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Dashboard data with overview and schedule
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 overview:
+ *                   type: object
+ *                   properties:
+ *                     appointmentsToday:
+ *                       type: integer
+ *                     totalCustomers:
+ *                       type: integer
+ *                     revenueToday:
+ *                       type: number
+ *                 schedule:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *       401:
+ *         description: Unauthorized
+ */
 router.get("/:businessId/dashboard", businessMiddleware, async (req, res, next) => {
   try {
     const today = new Date()
