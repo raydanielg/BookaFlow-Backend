@@ -6,6 +6,9 @@ const { slugify } = require("../utils/helpers")
 const { validateBody } = require("../middleware/error")
 const { authMiddleware } = require("../middleware/auth")
 const { signupSchema, loginSchema } = require("../validations/auth")
+const { sendMail } = require("../utils/mailer")
+const { welcomeEmailTemplate, welcomeEmailText } = require("../utils/email-templates")
+const config = require("../config/env")
 
 const router = express.Router()
 
@@ -127,6 +130,25 @@ router.post("/signup", validateBody(signupSchema), async (req, res, next) => {
         slug: result.business.slug,
         bookingLink: result.business.bookingLink,
       },
+    })
+
+    sendMail({
+      to: result.user.email,
+      subject: "Welcome to BookaFlow — Your booking platform is ready",
+      html: welcomeEmailTemplate({
+        fullName: result.user.fullName,
+        businessName: result.business.name,
+        bookingLink: result.business.bookingLink,
+        frontendUrl: config.clientUrl,
+      }),
+      text: welcomeEmailText({
+        fullName: result.user.fullName,
+        businessName: result.business.name,
+        bookingLink: result.business.bookingLink,
+        frontendUrl: config.clientUrl,
+      }),
+    }).catch((err) => {
+      console.error("[MAIL] Failed to send welcome email:", err.message)
     })
   } catch (err) {
     next(err)
