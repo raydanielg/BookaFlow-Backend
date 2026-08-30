@@ -16,6 +16,7 @@ const appointmentRoutes = require("./routes/appointments")
 const customerRoutes = require("./routes/customers")
 const bookingRoutes = require("./routes/booking")
 const publicRoutes = require("./routes/public")
+const eventRoutes = require("./routes/events")
 
 const app = express()
 
@@ -100,6 +101,7 @@ app.use("/api/services", serviceRoutes)
 app.use("/api/staff", staffRoutes)
 app.use("/api/appointments", appointmentRoutes)
 app.use("/api/customers", customerRoutes)
+app.use("/api/events", eventRoutes)
 
 // Swagger docs
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec))

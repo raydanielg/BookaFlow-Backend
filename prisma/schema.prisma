@@ -26,6 +26,43 @@ enum ProfileVisibility {
   PRIVATE
 }
 
+enum EventType {
+  CONFERENCE
+  WORKSHOP
+  SEMINAR
+  TRAINING
+  WEBINAR
+  NETWORKING
+  EXHIBITION
+  WEDDING
+  BIRTHDAY
+  CORPORATE
+  COMMUNITY
+  OTHER
+}
+
+enum EventMode {
+  ONLINE
+  PHYSICAL
+  HYBRID
+}
+
+enum RegistrationType {
+  FREE
+  TICKETED
+  APPLICATION
+}
+
+enum RegistrationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  WAITLISTED
+  REGISTERED
+  CANCELLED
+  CHECKED_IN
+}
+
 enum BusinessType {
   SALON
   CLINIC
@@ -96,6 +133,7 @@ model Business {
   profile        BusinessProfile?
   bookingSettings BookingSettings?
   reviews        Review[]
+  events         Event[]
 
   @@map("businesses")
 }
@@ -343,4 +381,71 @@ model Review {
   business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
 
   @@map("reviews")
+}
+
+model Event {
+  id              String           @id @default(cuid())
+  businessId      String
+  title           String
+  slug            String
+  description     String?
+  coverImage      String?
+  category        EventType        @default(OTHER)
+  mode            EventMode        @default(PHYSICAL)
+  registrationType RegistrationType @default(FREE)
+  startDate       DateTime
+  endDate         DateTime
+  location        String?
+  onlineLink      String?
+  capacity        Int              @default(0)
+  isPublished     Boolean          @default(true)
+  isRegistrationOpen Boolean       @default(true)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  business       Business           @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  tickets        EventTicket[]
+  registrations  EventRegistration[]
+
+  @@unique([businessId, slug])
+  @@map("events")
+}
+
+model EventTicket {
+  id          String   @id @default(cuid())
+  eventId     String
+  name        String
+  price       Decimal  @db.Decimal(12, 2)
+  quantity    Int      @default(0)
+  soldCount   Int      @default(0)
+  description String?
+  createdAt   DateTime @default(now())
+
+  event         Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  registrations EventRegistration[]
+
+  @@map("event_tickets")
+}
+
+model EventRegistration {
+  id          String             @id @default(cuid())
+  eventId     String
+  ticketId    String?
+  fullName    String
+  email       String
+  phone       String
+  organization String?
+  occupation  String?
+  motivation  String?
+  status      RegistrationStatus @default(REGISTERED)
+  ticketNumber String?
+  qrCode      String?
+  checkedIn   Boolean            @default(false)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  event  Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  ticket EventTicket? @relation(fields: [ticketId], references: [id], onDelete: SetNull)
+
+  @@map("event_registrations")
 }
