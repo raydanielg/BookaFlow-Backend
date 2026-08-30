@@ -37,7 +37,7 @@ router.use(authMiddleware)
  */
 router.get("/:businessId", businessMiddleware, async (req, res, next) => {
   try {
-    const { date } = req.query
+    const { date, from, to, staffId } = req.query
     const where = { businessId: req.businessId }
 
     if (date) {
@@ -46,6 +46,16 @@ router.get("/:businessId", businessMiddleware, async (req, res, next) => {
       const end = new Date(date)
       end.setHours(23, 59, 59, 999)
       where.date = { gte: start, lte: end }
+    } else if (from && to) {
+      const start = new Date(from)
+      start.setHours(0, 0, 0, 0)
+      const end = new Date(to)
+      end.setHours(23, 59, 59, 999)
+      where.date = { gte: start, lte: end }
+    }
+
+    if (staffId) {
+      where.staffId = staffId
     }
 
     const appointments = await prisma.appointment.findMany({
