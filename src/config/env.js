@@ -10,7 +10,7 @@ module.exports = {
   },
   smtp: {
     host: process.env.SMTP_HOST || "mail.lipasalama.co.tz",
-    port: parseInt(process.env.SMTP_PORT || "587", 10),
+    port: parseInt(process.env.SMTP_PORT || "465", 10),
     user: process.env.SMTP_USER || "info@lipasalama.co.tz",
     pass: process.env.SMTP_PASS || "Lipasalama@2026",
     from: process.env.SMTP_FROM || "BookMiadi <info@lipasalama.co.tz>",
