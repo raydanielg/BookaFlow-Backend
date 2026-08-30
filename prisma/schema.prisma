@@ -118,6 +118,12 @@ model Business {
   facebook         String?
   tiktok           String?
   whatsapp         String?
+  gallery          String?   // JSON array of image URLs
+  bio              String?   // Longer personal/professional bio
+  yearsOfExperience Int?
+  specialties      String?   // Comma-separated
+  languages        String?   // Comma-separated
+  certifications   String?   // JSON array of {name, issuer, year}
   profileVisibility  ProfileVisibility @default(PUBLIC)
   bookingVisibility  ProfileVisibility @default(PUBLIC)
   bookingLink      String?

@@ -80,6 +80,12 @@ const businessProfileSchema = z.object({
   facebook: z.string().optional(),
   tiktok: z.string().optional(),
   whatsapp: z.string().optional(),
+  gallery: z.string().optional(),
+  bio: z.string().optional(),
+  yearsOfExperience: z.number().int().optional(),
+  specialties: z.string().optional(),
+  languages: z.string().optional(),
+  certifications: z.string().optional(),
   profileVisibility: z.enum(["PUBLIC", "PRIVATE"]).optional(),
   bookingVisibility: z.enum(["PUBLIC", "PRIVATE"]).optional(),
 })

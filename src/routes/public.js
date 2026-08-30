@@ -85,6 +85,12 @@ router.get("/:slug", async (req, res, next) => {
         tiktok: business.tiktok,
         whatsapp: business.whatsapp,
         bookingLink: business.bookingLink,
+        gallery: business.gallery ? JSON.parse(business.gallery) : [],
+        bio: business.bio,
+        yearsOfExperience: business.yearsOfExperience,
+        specialties: business.specialties ? business.specialties.split(",").map(s => s.trim()).filter(Boolean) : [],
+        languages: business.languages ? business.languages.split(",").map(s => s.trim()).filter(Boolean) : [],
+        certifications: business.certifications ? JSON.parse(business.certifications) : [],
         workingHours: business.workingHours,
       },
       seo: business.profile
