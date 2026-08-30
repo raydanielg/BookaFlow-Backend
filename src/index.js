@@ -40,6 +40,53 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() })
 })
 
+// Test SMTP endpoint
+app.post("/api/test-email", async (req, res) => {
+  try {
+    const { sendMail } = require("./utils/mailer")
+    const { welcomeEmailTemplate, welcomeEmailText } = require("./utils/email-templates")
+    const config = require("./config/env")
+
+    const to = req.body.to || "test@example.com"
+
+    const html = welcomeEmailTemplate({
+      fullName: "Test User",
+      businessName: "Test Business",
+      bookingLink: "/book/test-business",
+      frontendUrl: config.clientUrl,
+    })
+
+    const text = welcomeEmailText({
+      fullName: "Test User",
+      businessName: "Test Business",
+      bookingLink: "/book/test-business",
+      frontendUrl: config.clientUrl,
+    })
+
+    const info = await sendMail({
+      to,
+      subject: "BookMiadi — SMTP Test Email",
+      html,
+      text,
+    })
+
+    res.json({
+      success: true,
+      message: "Email sent successfully",
+      messageId: info.messageId,
+      accepted: info.accepted,
+      rejected: info.rejected,
+    })
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+      code: err.code,
+      command: err.command,
+    })
+  }
+})
+
 // Public routes (no auth)
 app.use("/api/booking", bookingRoutes)
 app.use("/api/public", publicRoutes)
