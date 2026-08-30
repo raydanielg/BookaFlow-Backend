@@ -9,10 +9,10 @@ module.exports = {
     expiresIn: process.env.JWT_EXPIRES_IN || "7d",
   },
   smtp: {
-    host: process.env.SMTP_HOST || "mail.lipasalama.co.tz",
+    host: process.env.SMTP_HOST || "mail.sars.ac.tz",
     port: parseInt(process.env.SMTP_PORT || "465", 10),
-    user: process.env.SMTP_USER || "info@lipasalama.co.tz",
-    pass: process.env.SMTP_PASS || "Lipasalama@2026",
-    from: process.env.SMTP_FROM || "BookMiadi <info@lipasalama.co.tz>",
+    user: process.env.SMTP_USER || "info@sars.ac.tz",
+    pass: process.env.SMTP_PASS || "Sars@2026",
+    from: process.env.SMTP_FROM || "BookMiadi <info@sars.ac.tz>",
   },
 }
