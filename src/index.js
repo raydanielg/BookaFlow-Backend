@@ -19,6 +19,8 @@ const publicRoutes = require("./routes/public")
 const eventRoutes = require("./routes/events")
 const paymentRoutes = require("./routes/payments")
 const aiRoutes = require("./routes/ai")
+const uploadRoutes = require("./routes/uploads")
+const path = require("path")
 
 const app = express()
 
@@ -38,6 +40,9 @@ app.use(morgan("dev"))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
+
+// Serve uploaded files statically
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")))
 
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() })
@@ -106,6 +111,7 @@ app.use("/api/customers", customerRoutes)
 app.use("/api/events", eventRoutes)
 app.use("/api/payments", paymentRoutes)
 app.use("/api/ai", aiRoutes)
+app.use("/api/uploads", uploadRoutes)
 
 // Swagger docs
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec))
