@@ -65,7 +65,7 @@ app.post("/api/test-email", async (req, res) => {
 
     const info = await sendMail({
       to,
-      subject: "BookMiadi — SMTP Test Email",
+      subject: "BookaFlow — SMTP Test Email",
       html,
       text,
     })
@@ -108,7 +108,7 @@ app.use(notFound)
 app.use(errorHandler)
 
 app.listen(config.port, () => {
-  console.log(`\n  BookMiadi Booking API running on http://localhost:${config.port}`)
+  console.log(`\n  BookaFlow Booking API running on http://localhost:${config.port}`)
   console.log(`  Swagger docs: http://localhost:${config.port}/api/docs`)
   console.log(`  Environment: ${config.nodeEnv}\n`)
 })

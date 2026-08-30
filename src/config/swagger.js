@@ -4,7 +4,7 @@ const options = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "BookMiadi Booking API",
+      title: "BookaFlow Booking API",
       version: "1.0.0",
       description: "B2B SaaS booking & scheduling platform API",
     },

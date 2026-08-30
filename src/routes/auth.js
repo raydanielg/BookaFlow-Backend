@@ -134,7 +134,7 @@ router.post("/signup", validateBody(signupSchema), async (req, res, next) => {
 
     sendMail({
       to: result.user.email,
-      subject: "Welcome to BookMiadi — Your booking platform is ready",
+      subject: "Welcome to BookaFlow — Your booking platform is ready",
       html: welcomeEmailTemplate({
         fullName: result.user.fullName,
         businessName: result.business.name,
