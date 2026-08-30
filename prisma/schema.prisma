@@ -21,6 +21,11 @@ enum AppointmentStatus {
   NO_SHOW
 }
 
+enum ProfileVisibility {
+  PUBLIC
+  PRIVATE
+}
+
 enum BusinessType {
   SALON
   CLINIC
@@ -56,26 +61,41 @@ model User {
 }
 
 model Business {
-  id          String       @id @default(cuid())
-  name        String
-  slug        String       @unique
-  type        BusinessType @default(OTHER)
-  description String?
-  logo        String?
-  phone       String?
-  email       String?
-  address     String?
-  city        String?
-  bookingLink String?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id               String           @id @default(cuid())
+  name             String
+  slug             String           @unique
+  type             BusinessType     @default(OTHER)
+  description      String?
+  shortDescription String?
+  logo             String?
+  coverImage       String?
+  phone            String?
+  email            String?
+  website          String?
+  address          String?
+  city             String?
+  region           String?
+  country          String?
+  googleMapsLink   String?
+  instagram        String?
+  facebook         String?
+  tiktok           String?
+  whatsapp         String?
+  profileVisibility  ProfileVisibility @default(PUBLIC)
+  bookingVisibility  ProfileVisibility @default(PUBLIC)
+  bookingLink      String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
 
-  members       BusinessMember[]
-  services      Service[]
-  staff         Staff[]
-  customers     Customer[]
-  appointments  Appointment[]
-  workingHours  WorkingHours[]
+  members        BusinessMember[]
+  services       Service[]
+  staff          Staff[]
+  customers      Customer[]
+  appointments   Appointment[]
+  workingHours   WorkingHours[]
+  profile        BusinessProfile?
+  bookingSettings BookingSettings?
+  reviews        Review[]
 
   @@map("businesses")
 }
@@ -95,15 +115,18 @@ model BusinessMember {
 }
 
 model Service {
-  id          String   @id @default(cuid())
-  businessId  String
-  name        String
-  description String?
-  price       Decimal  @db.Decimal(12, 2)
-  duration    Int
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id              String   @id @default(cuid())
+  businessId      String
+  name            String
+  description     String?
+  category        String?
+  price           Decimal  @db.Decimal(12, 2)
+  duration        Int
+  deposit         Decimal? @db.Decimal(12, 2)
+  isActive        Boolean  @default(true)
+  availableOnline Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   business    Business     @relation(fields: [businessId], references: [id], onDelete: Cascade)
   staff       StaffService[]
@@ -258,4 +281,66 @@ model AuditLog {
   createdAt  DateTime @default(now())
 
   @@map("audit_logs")
+}
+
+model BusinessProfile {
+  id             String   @id @default(cuid())
+  businessId     String   @unique
+  seoTitle       String?
+  metaDescription String?
+  focusKeywords  String?
+  ogTitle        String?
+  ogDescription  String?
+  ogImage        String?
+  canonicalUrl   String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("business_profiles")
+}
+
+model BookingSettings {
+  id                       String   @id @default(cuid())
+  businessId               String   @unique
+  bookingEnabled           Boolean  @default(true)
+  advanceBookingDays       Int      @default(30)
+  minimumNoticeHours       Int      @default(2)
+  cancellationAllowed      Boolean  @default(true)
+  cancellationDeadlineHours Int     @default(6)
+  reschedulingAllowed      Boolean  @default(true)
+  noShowProtection         Boolean  @default(true)
+  requirePhone             Boolean  @default(true)
+  requireEmail             Boolean  @default(false)
+  bufferMinutes            Int      @default(0)
+  maxDailyBookings         Int      @default(50)
+  allowDoubleBooking       Boolean  @default(false)
+  autoConfirm              Boolean  @default(true)
+  requireStaffSelection    Boolean  @default(false)
+  allowCustomerNotes       Boolean  @default(true)
+  paymentMode              String   @default("PAY_AT_VENUE")
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("booking_settings")
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  businessId String
+  customerName String
+  customerPhone String?
+  rating     Int
+  comment    String?
+  reply      String?
+  isReported Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("reviews")
 }

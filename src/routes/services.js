@@ -44,9 +44,12 @@ router.get("/:businessId", businessMiddleware, async (req, res, next) => {
         id: s.id,
         name: s.name,
         description: s.description,
+        category: s.category,
         price: Number(s.price),
         duration: s.duration,
+        deposit: s.deposit ? Number(s.deposit) : null,
         isActive: s.isActive,
+        availableOnline: s.availableOnline,
         staff: s.staff.map((ss) => ({
           id: ss.staff.id,
           name: ss.staff.name,
@@ -102,15 +105,18 @@ router.get("/:businessId", businessMiddleware, async (req, res, next) => {
  */
 router.post("/:businessId", businessMiddleware, validateBody(serviceSchema), async (req, res, next) => {
   try {
-    const { name, description, price, duration, staffIds } = req.body
+    const { name, description, category, price, duration, deposit, availableOnline, staffIds } = req.body
 
     const service = await prisma.service.create({
       data: {
         businessId: req.businessId,
         name,
         description,
+        category,
         price,
         duration,
+        deposit: deposit || undefined,
+        availableOnline: availableOnline ?? true,
         staff: staffIds?.length
           ? { create: staffIds.map((staffId) => ({ staffId })) }
           : undefined,
@@ -125,6 +131,9 @@ router.post("/:businessId", businessMiddleware, validateBody(serviceSchema), asy
         name: service.name,
         price: Number(service.price),
         duration: service.duration,
+        category: service.category,
+        deposit: service.deposit ? Number(service.deposit) : null,
+        availableOnline: service.availableOnline,
         staff: service.staff.map((ss) => ({
           id: ss.staff.id,
           name: ss.staff.name,
@@ -182,7 +191,7 @@ router.post("/:businessId", businessMiddleware, validateBody(serviceSchema), asy
  */
 router.put("/:businessId/:id", businessMiddleware, validateBody(serviceSchema), async (req, res, next) => {
   try {
-    const { name, description, price, duration, staffIds } = req.body
+    const { name, description, category, price, duration, deposit, availableOnline, staffIds } = req.body
 
     await prisma.staffService.deleteMany({
       where: { serviceId: req.params.id },
@@ -193,8 +202,11 @@ router.put("/:businessId/:id", businessMiddleware, validateBody(serviceSchema), 
       data: {
         name,
         description,
+        category,
         price,
         duration,
+        deposit: deposit || undefined,
+        availableOnline: availableOnline ?? true,
         staff: staffIds?.length
           ? { create: staffIds.map((staffId) => ({ staffId })) }
           : undefined,
@@ -209,6 +221,9 @@ router.put("/:businessId/:id", businessMiddleware, validateBody(serviceSchema), 
         name: service.name,
         price: Number(service.price),
         duration: service.duration,
+        category: service.category,
+        deposit: service.deposit ? Number(service.deposit) : null,
+        availableOnline: service.availableOnline,
         staff: service.staff.map((ss) => ({
           id: ss.staff.id,
           name: ss.staff.name,

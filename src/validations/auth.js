@@ -16,8 +16,11 @@ const loginSchema = z.object({
 const serviceSchema = z.object({
   name: z.string().min(2, "Service name is required"),
   description: z.string().optional(),
+  category: z.string().optional(),
   price: z.number().min(0, "Price must be positive"),
   duration: z.number().min(5, "Duration must be at least 5 minutes"),
+  deposit: z.number().min(0).optional(),
+  availableOnline: z.boolean().optional(),
   staffIds: z.array(z.string()).optional(),
 })
 
@@ -59,12 +62,55 @@ const customerSchema = z.object({
 })
 
 const businessProfileSchema = z.object({
-  name: z.string().min(2),
+  name: z.string().min(2).optional(),
+  type: z.enum(["SALON", "CLINIC", "SPA", "GYM", "CONSULTATION", "OTHER"]).optional(),
   description: z.string().optional(),
+  shortDescription: z.string().max(200).optional(),
+  logo: z.string().optional(),
+  coverImage: z.string().optional(),
   phone: z.string().optional(),
   email: z.string().email().optional(),
+  website: z.string().optional(),
   address: z.string().optional(),
   city: z.string().optional(),
+  region: z.string().optional(),
+  country: z.string().optional(),
+  googleMapsLink: z.string().optional(),
+  instagram: z.string().optional(),
+  facebook: z.string().optional(),
+  tiktok: z.string().optional(),
+  whatsapp: z.string().optional(),
+  profileVisibility: z.enum(["PUBLIC", "PRIVATE"]).optional(),
+  bookingVisibility: z.enum(["PUBLIC", "PRIVATE"]).optional(),
+})
+
+const seoSchema = z.object({
+  seoTitle: z.string().max(60).optional(),
+  metaDescription: z.string().max(160).optional(),
+  focusKeywords: z.string().optional(),
+  ogTitle: z.string().optional(),
+  ogDescription: z.string().optional(),
+  ogImage: z.string().optional(),
+  canonicalUrl: z.string().optional(),
+})
+
+const bookingSettingsSchema = z.object({
+  bookingEnabled: z.boolean().optional(),
+  advanceBookingDays: z.number().int().min(1).max(365).optional(),
+  minimumNoticeHours: z.number().int().min(0).max(168).optional(),
+  cancellationAllowed: z.boolean().optional(),
+  cancellationDeadlineHours: z.number().int().min(0).optional(),
+  reschedulingAllowed: z.boolean().optional(),
+  noShowProtection: z.boolean().optional(),
+  requirePhone: z.boolean().optional(),
+  requireEmail: z.boolean().optional(),
+  bufferMinutes: z.number().int().min(0).max(120).optional(),
+  maxDailyBookings: z.number().int().min(1).optional(),
+  allowDoubleBooking: z.boolean().optional(),
+  autoConfirm: z.boolean().optional(),
+  requireStaffSelection: z.boolean().optional(),
+  allowCustomerNotes: z.boolean().optional(),
+  paymentMode: z.enum(["PAY_AT_VENUE", "FULL_PAYMENT", "DEPOSIT"]).optional(),
 })
 
 module.exports = {
@@ -77,4 +123,6 @@ module.exports = {
   workingHoursSchema,
   customerSchema,
   businessProfileSchema,
+  seoSchema,
+  bookingSettingsSchema,
 }

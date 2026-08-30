@@ -2,7 +2,7 @@ const express = require("express")
 const { prisma } = require("../config/prisma")
 const { authMiddleware, businessMiddleware } = require("../middleware/auth")
 const { validateBody } = require("../middleware/error")
-const { businessProfileSchema, workingHoursSchema } = require("../validations/auth")
+const { businessProfileSchema, workingHoursSchema, seoSchema, bookingSettingsSchema } = require("../validations/auth")
 
 const router = express.Router()
 
@@ -35,6 +35,8 @@ router.get("/:businessId", businessMiddleware, async (req, res, next) => {
     const business = await prisma.business.findUnique({
       where: { id: req.businessId },
       include: {
+        profile: true,
+        bookingSettings: true,
         workingHours: { where: { staffId: null } },
         _count: {
           select: {
@@ -54,11 +56,23 @@ router.get("/:businessId", businessMiddleware, async (req, res, next) => {
         slug: business.slug,
         type: business.type,
         description: business.description,
+        shortDescription: business.shortDescription,
         logo: business.logo,
+        coverImage: business.coverImage,
         phone: business.phone,
         email: business.email,
+        website: business.website,
         address: business.address,
         city: business.city,
+        region: business.region,
+        country: business.country,
+        googleMapsLink: business.googleMapsLink,
+        instagram: business.instagram,
+        facebook: business.facebook,
+        tiktok: business.tiktok,
+        whatsapp: business.whatsapp,
+        profileVisibility: business.profileVisibility,
+        bookingVisibility: business.bookingVisibility,
         bookingLink: business.bookingLink,
         stats: {
           services: business._count.services,
@@ -67,6 +81,8 @@ router.get("/:businessId", businessMiddleware, async (req, res, next) => {
           appointments: business._count.appointments,
         },
         workingHours: business.workingHours,
+        seo: business.profile,
+        bookingSettings: business.bookingSettings,
       },
     })
   } catch (err) {
@@ -115,11 +131,9 @@ router.get("/:businessId", businessMiddleware, async (req, res, next) => {
  */
 router.put("/:businessId", businessMiddleware, validateBody(businessProfileSchema), async (req, res, next) => {
   try {
-    const { name, description, phone, email, address, city } = req.body
-
     const business = await prisma.business.update({
       where: { id: req.businessId },
-      data: { name, description, phone, email, address, city },
+      data: req.body,
     })
 
     res.json({
@@ -128,12 +142,56 @@ router.put("/:businessId", businessMiddleware, validateBody(businessProfileSchem
         id: business.id,
         name: business.name,
         slug: business.slug,
-        phone: business.phone,
-        email: business.email,
-        address: business.address,
-        city: business.city,
       },
     })
+  } catch (err) {
+    next(err)
+  }
+})
+
+// PUT /api/business/:businessId/seo
+router.put("/:businessId/seo", businessMiddleware, validateBody(seoSchema), async (req, res, next) => {
+  try {
+    const existing = await prisma.businessProfile.findUnique({
+      where: { businessId: req.businessId },
+    })
+
+    if (existing) {
+      const updated = await prisma.businessProfile.update({
+        where: { businessId: req.businessId },
+        data: req.body,
+      })
+      res.json({ message: "SEO settings updated", seo: updated })
+    } else {
+      const created = await prisma.businessProfile.create({
+        data: { businessId: req.businessId, ...req.body },
+      })
+      res.json({ message: "SEO settings created", seo: created })
+    }
+  } catch (err) {
+    next(err)
+  }
+})
+
+// PUT /api/business/:businessId/booking-settings
+router.put("/:businessId/booking-settings", businessMiddleware, validateBody(bookingSettingsSchema), async (req, res, next) => {
+  try {
+    const existing = await prisma.bookingSettings.findUnique({
+      where: { businessId: req.businessId },
+    })
+
+    if (existing) {
+      const updated = await prisma.bookingSettings.update({
+        where: { businessId: req.businessId },
+        data: req.body,
+      })
+      res.json({ message: "Booking settings updated", settings: updated })
+    } else {
+      const created = await prisma.bookingSettings.create({
+        data: { businessId: req.businessId, ...req.body },
+      })
+      res.json({ message: "Booking settings created", settings: created })
+    }
   } catch (err) {
     next(err)
   }

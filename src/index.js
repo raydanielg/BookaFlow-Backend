@@ -15,6 +15,7 @@ const staffRoutes = require("./routes/staff")
 const appointmentRoutes = require("./routes/appointments")
 const customerRoutes = require("./routes/customers")
 const bookingRoutes = require("./routes/booking")
+const publicRoutes = require("./routes/public")
 
 const app = express()
 
@@ -39,8 +40,9 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() })
 })
 
-// Public booking route (no auth)
+// Public routes (no auth)
 app.use("/api/booking", bookingRoutes)
+app.use("/api/public", publicRoutes)
 
 // Auth routes
 app.use("/api/auth", authRoutes)
@@ -59,7 +61,7 @@ app.use(notFound)
 app.use(errorHandler)
 
 app.listen(config.port, () => {
-  console.log(`\n  BookaFlow Booking API running on http://localhost:${config.port}`)
+  console.log(`\n  BookMiadi Booking API running on http://localhost:${config.port}`)
   console.log(`  Swagger docs: http://localhost:${config.port}/api/docs`)
   console.log(`  Environment: ${config.nodeEnv}\n`)
 })

@@ -7,7 +7,7 @@ function welcomeEmailTemplate({ fullName, businessName, bookingLink, frontendUrl
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Welcome to BookaFlow</title>
+  <title>Welcome to BookMiadi</title>
 </head>
 <body style="margin:0;padding:0;background-color:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f5;padding:24px 0;">
@@ -18,8 +18,8 @@ function welcomeEmailTemplate({ fullName, businessName, bookingLink, frontendUrl
           <!-- Header -->
           <tr>
             <td style="background:linear-gradient(135deg,#1e7f76 0%,#1a6b62 100%);padding:40px 40px 32px;text-align:center;">
-              <img src="https://booka-flow-web.vercel.app/peercoin.png" alt="BookaFlow" width="48" height="48" style="border-radius:12px;margin:0 auto 16px;display:block;" />
-              <h1 style="color:#ffffff;font-size:24px;font-weight:700;margin:0 0 8px;letter-spacing:-0.5px;">Welcome to BookaFlow</h1>
+              <img src="https://bookmiadi-web.vercel.app/peercoin.png" alt="BookMiadi" width="48" height="48" style="border-radius:12px;margin:0 auto 16px;display:block;" />
+              <h1 style="color:#ffffff;font-size:24px;font-weight:700;margin:0 0 8px;letter-spacing:-0.5px;">Welcome to BookMiadi</h1>
               <p style="color:rgba(255,255,255,0.8);font-size:15px;margin:0;">Your booking platform is ready to go</p>
             </td>
           </tr>
@@ -29,7 +29,7 @@ function welcomeEmailTemplate({ fullName, businessName, bookingLink, frontendUrl
             <td style="padding:40px 40px 24px;">
               <h2 style="color:#18181b;font-size:20px;font-weight:600;margin:0 0 16px;">Hi ${fullName},</h2>
               <p style="color:#52525b;font-size:15px;line-height:1.7;margin:0 0 24px;">
-                Welcome to BookaFlow! Your account for <strong style="color:#18181b;">${businessName}</strong> has been created successfully.
+                Welcome to BookMiadi! Your account for <strong style="color:#18181b;">${businessName}</strong> has been created successfully.
                 You're now ready to start managing your appointments, staff, and customers — all in one place.
               </p>
 
@@ -87,14 +87,14 @@ function welcomeEmailTemplate({ fullName, businessName, bookingLink, frontendUrl
                 <a href="mailto:info@lipasalama.co.tz" style="color:#1e7f76;text-decoration:none;">info@lipasalama.co.tz</a>
               </p>
               <p style="color:#a1a1aa;font-size:12px;margin:0 0 8px;">
-                <a href="${frontendUrl}" style="color:#a1a1aa;text-decoration:none;">BookaFlow</a>
+                <a href="${frontendUrl}" style="color:#a1a1aa;text-decoration:none;">BookMiadi</a>
                 &nbsp;·&nbsp;
                 <a href="${frontendUrl}/terms" style="color:#a1a1aa;text-decoration:none;">Terms</a>
                 &nbsp;·&nbsp;
                 <a href="${frontendUrl}/privacy" style="color:#a1a1aa;text-decoration:none;">Privacy</a>
               </p>
               <p style="color:#a1a1aa;font-size:12px;margin:0;">
-                &copy; ${new Date().getFullYear()} BookaFlow. All rights reserved.
+                &copy; ${new Date().getFullYear()} BookMiadi. All rights reserved.
               </p>
             </td>
           </tr>
@@ -110,7 +110,7 @@ function welcomeEmailText({ fullName, businessName, bookingLink, frontendUrl }) 
   const dashboardUrl = `${frontendUrl}/dashboard`
   const fullBookingUrl = `${frontendUrl}${bookingLink}`
 
-  return `Welcome to BookaFlow!
+  return `Welcome to BookMiadi!
 
 Hi ${fullName},
 
@@ -127,7 +127,7 @@ Go to your dashboard: ${dashboardUrl}
 
 Need help? Contact us at info@lipasalama.co.tz
 
-© ${new Date().getFullYear()} BookaFlow. All rights reserved.
+© ${new Date().getFullYear()} BookMiadi. All rights reserved.
 ${frontendUrl}`
 }
 
