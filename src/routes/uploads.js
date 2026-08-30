@@ -25,12 +25,11 @@ const storage = multer.diskStorage({
 })
 
 const fileFilter = (req, file, cb) => {
-  const allowed = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg"]
-  const ext = path.extname(file.originalname).toLowerCase()
-  if (allowed.includes(ext)) {
+  const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif", "image/svg+xml"]
+  if (allowedTypes.includes(file.mimetype)) {
     cb(null, true)
   } else {
-    cb(new Error("Only image files are allowed (jpg, jpeg, png, webp, gif, svg)"), false)
+    cb(null, false)
   }
 }
 
@@ -40,8 +39,23 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
 })
 
+// Multer error handler wrapper
+function uploadMiddleware(middleware) {
+  return (req, res, next) => {
+    middleware(req, res, (err) => {
+      if (err) {
+        console.error("[uploads] Multer error:", err.message)
+        return res.status(400).json({ error: err.message })
+      }
+      next()
+    })
+  }
+}
+
 // POST /api/uploads/image — upload single image (auth required)
-router.post("/image", authMiddleware, upload.single("image"), (req, res) => {
+router.post("/image", authMiddleware, uploadMiddleware(upload.single("image")), (req, res) => {
+  console.log("[uploads] req.file:", req.file ? req.file.originalname : "NONE")
+  console.log("[uploads] content-type:", req.headers["content-type"])
   if (!req.file) {
     return res.status(400).json({ error: "No file uploaded" })
   }
@@ -57,7 +71,7 @@ router.post("/image", authMiddleware, upload.single("image"), (req, res) => {
 })
 
 // POST /api/uploads/images — upload multiple images (auth required, max 10)
-router.post("/images", authMiddleware, upload.array("images", 10), (req, res) => {
+router.post("/images", authMiddleware, uploadMiddleware(upload.array("images", 10)), (req, res) => {
   if (!req.files || req.files.length === 0) {
     return res.status(400).json({ error: "No files uploaded" })
   }
