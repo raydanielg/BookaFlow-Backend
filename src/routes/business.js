@@ -331,4 +331,157 @@ router.get("/:businessId/dashboard", businessMiddleware, async (req, res, next) 
   }
 })
 
+/**
+ * @swagger
+ * /api/business/{businessId}/analytics:
+ *   get:
+ *     summary: Get analytics data (revenue trend, status breakdown, top services, KPIs)
+ *     tags: [Business]
+ *     parameters:
+ *       - in: path
+ *         name: businessId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Analytics data
+ */
+router.get("/:businessId/analytics", businessMiddleware, async (req, res, next) => {
+  try {
+    const now = new Date()
+    const sevenDaysAgo = new Date(now)
+    sevenDaysAgo.setDate(now.getDate() - 6)
+    sevenDaysAgo.setHours(0, 0, 0, 0)
+
+    const thirtyDaysAgo = new Date(now)
+    thirtyDaysAgo.setDate(now.getDate() - 29)
+    thirtyDaysAgo.setHours(0, 0, 0, 0)
+
+    const prevSevenDaysAgo = new Date(sevenDaysAgo)
+    prevSevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+
+    // Fetch all appointments in last 30 days with relations
+    const appointments = await prisma.appointment.findMany({
+      where: {
+        businessId: req.businessId,
+        date: { gte: thirtyDaysAgo },
+      },
+      include: {
+        service: true,
+        customer: true,
+      },
+      orderBy: { date: "asc" },
+    })
+
+    // Fetch previous 7 days for comparison
+    const prevWeekAppointments = await prisma.appointment.findMany({
+      where: {
+        businessId: req.businessId,
+        date: { gte: prevSevenDaysAgo, lt: sevenDaysAgo },
+      },
+      include: { service: true },
+    })
+
+    const totalCustomers = await prisma.customer.count({ where: { businessId: req.businessId } })
+    const prevWeekCustomers = await prisma.customer.count({
+      where: {
+        businessId: req.businessId,
+        createdAt: { gte: prevSevenDaysAgo, lt: sevenDaysAgo },
+      },
+    })
+    const thisWeekCustomers = await prisma.customer.count({
+      where: {
+        businessId: req.businessId,
+        createdAt: { gte: sevenDaysAgo },
+      },
+    })
+
+    // Build 7-day revenue trend
+    const revenueTrend = []
+    for (let i = 0; i < 7; i++) {
+      const day = new Date(sevenDaysAgo)
+      day.setDate(sevenDaysAgo.getDate() + i)
+      const dayEnd = new Date(day)
+      dayEnd.setHours(23, 59, 59, 999)
+
+      const dayAppts = appointments.filter(
+        (a) => a.date >= day && a.date <= dayEnd
+      )
+      const dayRevenue = dayAppts
+        .filter((a) => a.status === "COMPLETED")
+        .reduce((sum, a) => sum + Number(a.service.price), 0)
+
+      revenueTrend.push({
+        date: day.toISOString().split("T")[0],
+        label: day.toLocaleDateString("en", { weekday: "short" }),
+        revenue: dayRevenue,
+        appointments: dayAppts.length,
+      })
+    }
+
+    // Appointment status breakdown (last 30 days)
+    const statusCounts = { COMPLETED: 0, CONFIRMED: 0, PENDING: 0, CANCELLED: 0, NO_SHOW: 0 }
+    appointments.forEach((a) => {
+      if (statusCounts[a.status] !== undefined) statusCounts[a.status]++
+    })
+    const statusBreakdown = Object.entries(statusCounts)
+      .filter(([, v]) => v > 0)
+      .map(([name, value]) => ({ name, value }))
+
+    // Top services by bookings (last 30 days)
+    const serviceMap = {}
+    appointments.forEach((a) => {
+      const name = a.service.name
+      if (!serviceMap[name]) {
+        serviceMap[name] = { name, bookings: 0, revenue: 0 }
+      }
+      serviceMap[name].bookings++
+      if (a.status === "COMPLETED") {
+        serviceMap[name].revenue += Number(a.service.price)
+      }
+    })
+    const topServices = Object.values(serviceMap)
+      .sort((a, b) => b.bookings - a.bookings)
+      .slice(0, 5)
+
+    // KPIs
+    const thisWeekRevenue = revenueTrend.reduce((sum, d) => sum + d.revenue, 0)
+    const thisWeekAppts = revenueTrend.reduce((sum, d) => sum + d.appointments, 0)
+    const prevWeekRevenue = prevWeekAppointments
+      .filter((a) => a.status === "COMPLETED")
+      .reduce((sum, a) => sum + Number(a.service.price), 0)
+    const prevWeekApptsCount = prevWeekAppointments.length
+
+    const revenueDelta = prevWeekRevenue > 0
+      ? ((thisWeekRevenue - prevWeekRevenue) / prevWeekRevenue) * 100
+      : thisWeekRevenue > 0 ? 100 : 0
+    const apptsDelta = prevWeekApptsCount > 0
+      ? ((thisWeekAppts - prevWeekApptsCount) / prevWeekApptsCount) * 100
+      : thisWeekAppts > 0 ? 100 : 0
+    const customersDelta = prevWeekCustomers > 0
+      ? ((thisWeekCustomers - prevWeekCustomers) / prevWeekCustomers) * 100
+      : thisWeekCustomers > 0 ? 100 : 0
+    const avgOrderValue = thisWeekAppts > 0 ? thisWeekRevenue / thisWeekAppts : 0
+    const prevAvgOrder = prevWeekApptsCount > 0 ? prevWeekRevenue / prevWeekApptsCount : 0
+    const avgOrderDelta = prevAvgOrder > 0
+      ? ((avgOrderValue - prevAvgOrder) / prevAvgOrder) * 100
+      : avgOrderValue > 0 ? 100 : 0
+
+    res.json({
+      kpis: {
+        revenue: { value: thisWeekRevenue, delta: revenueDelta },
+        appointments: { value: thisWeekAppts, delta: apptsDelta },
+        customers: { value: totalCustomers, delta: customersDelta },
+        avgOrderValue: { value: avgOrderValue, delta: avgOrderDelta },
+      },
+      revenueTrend,
+      statusBreakdown,
+      topServices,
+    })
+  } catch (err) {
+    next(err)
+  }
+})
+
 module.exports = router
