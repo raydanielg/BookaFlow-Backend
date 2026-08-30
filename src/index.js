@@ -37,12 +37,16 @@ app.use(
   })
 )
 app.use(morgan("dev"))
-app.use(express.json({ limit: "10mb" }))
-app.use(express.urlencoded({ extended: true, limit: "10mb" }))
 app.use(cookieParser())
 
 // Serve uploaded files statically
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")))
+
+// Upload routes — BEFORE json parser so multipart/form-data isn't parsed as JSON
+app.use("/api/uploads", uploadRoutes)
+
+app.use(express.json({ limit: "10mb" }))
+app.use(express.urlencoded({ extended: true, limit: "10mb" }))
 
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() })
@@ -111,7 +115,6 @@ app.use("/api/customers", customerRoutes)
 app.use("/api/events", eventRoutes)
 app.use("/api/payments", paymentRoutes)
 app.use("/api/ai", aiRoutes)
-app.use("/api/uploads", uploadRoutes)
 
 // Swagger docs
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec))
