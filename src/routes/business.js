@@ -290,7 +290,7 @@ router.get("/:businessId/dashboard", businessMiddleware, async (req, res, next) 
     const todayEnd = new Date()
     todayEnd.setHours(23, 59, 59, 999)
 
-    const [todayAppointments, totalCustomers, todayRevenue] = await Promise.all([
+    const [todayAppointments, totalCustomers] = await Promise.all([
       prisma.appointment.findMany({
         where: {
           businessId: req.businessId,
@@ -304,21 +304,17 @@ router.get("/:businessId/dashboard", businessMiddleware, async (req, res, next) 
         orderBy: { startTime: "asc" },
       }),
       prisma.customer.count({ where: { businessId: req.businessId } }),
-      prisma.appointment.aggregate({
-        where: {
-          businessId: req.businessId,
-          date: { gte: today, lte: todayEnd },
-          status: "COMPLETED",
-        },
-        _sum: { service: { price: true } },
-      }),
     ])
+
+    const revenueToday = todayAppointments
+      .filter((a) => a.status === "COMPLETED")
+      .reduce((sum, a) => sum + Number(a.service.price), 0)
 
     res.json({
       overview: {
         appointmentsToday: todayAppointments.length,
         totalCustomers,
-        revenueToday: 0, // calculated from service prices below
+        revenueToday,
       },
       schedule: todayAppointments.map((a) => ({
         id: a.id,
